@@ -1,0 +1,20 @@
+# 1. 基礎網域設定 (已針對您的帳號 v-681031 優化)
+baseURL = "https://v-681031.github.io/"
+languageCode = "zh-tw"
+title = "v-681031 數位生活與影像札記"
+theme = "" # 這是 Day 2 挑選佈景後的重點
+
+# 2. 【100% 未來遷移鎖定：Acer Nitro 專用參數】
+# 確保未來遷移至 Acer Nitro 平台後，所有連結與圖片路徑自動銜接
+# 這兩行是保證「連結不失效」的核心
+canonifyURLs = true
+relativeURLs = false
+
+# 3. 永久連結規範 (Permalinks)
+# 鎖定網址結構，即便未來更換伺服器，SEO 與舊連結亦不失效
+[permalinks]
+  posts = "/posts/:year/:month/:title/"
+
+# 4. 資源目錄規範
+[params]
+  imagesDir = "images" # 規範所有照片存放於 static/images/ 下
