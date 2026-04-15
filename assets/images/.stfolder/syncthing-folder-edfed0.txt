@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: lsl3g-79mtu
+created: 2026-04-15T14:09:36+08:00

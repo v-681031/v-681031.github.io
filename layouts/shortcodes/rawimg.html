@@ -1,0 +1,29 @@
+<style>
+  header, footer, nav, h1, h2, h3, h4, h5, h6, p, span, a, time, hr, 
+  .meta, .content-footer, .article-pagination, .breadcrumb, .scroll-to-top {
+    display: none !important;
+  }
+  body {
+    background-color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    scroll-snap-type: y mandatory;
+  }
+  .container, .main-content, article, main {
+    max-width: none !important;
+    width: 100vw !important;
+    padding: 0 !important;
+  }
+</style>
+
+{{- $img := .Page.Resources.GetMatch (.Get "src") -}}
+{{- if $img -}}
+  <div style="width: 100vw; height: 100vh; display: flex !important; justify-content: center !important; align-items: center !important; scroll-snap-align: center; background: #000;">
+    <img src="{{ $img.RelPermalink }}" style="height: 90vh !important; width: auto !important; max-width: 90vw !important; object-fit: contain !important; image-rendering: -webkit-optimize-contrast !important;">
+  </div>
+{{- else -}}
+  <div style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <img src="{{ (.Get "src") | safeURL }}" style="height: 90vh; width: auto;">
+  </div>
+{{- end -}}

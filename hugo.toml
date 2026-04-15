@@ -1,19 +1,18 @@
-baseURL = "https://v-681031.github.io/"
-languageCode = "zh-tw"
-title = "v-681031 影像手札"
-theme = "blowfish"
-
-# 【核心：Linux 遷移路徑鎖定】
-# 確保在 Acer Nitro 上執行時，圖片與連結路徑 100% 相同
-canonifyURLs = true
-relativeURLs = false
+baseURL = 'https://v-681031.github.io/'
+languageCode = 'zh-tw'
+title = '影像實驗室'
+theme = 'blowfish'
 
 [params]
-  # 視覺配色方案
-  colorScheme = "blowfish" 
-  # 在文章標題旁顯示錨點
-  showHeadingAnchors = true
-  # 預設文章分類路徑
-  mainSections = ["posts"]
-  # 影像優化設定
-  imageResolutions = [600, 900, 1200]
+  # 開啟文章 UI
+  [params.article]
+    layoutWidth = "full" 
+    showAuthor = true
+    showDate = true
+    showReadingTime = true
+
+  # 確保首頁顯示 Recent 與卡片
+  [params.homepage]
+    showRecent = true
+    mainSections = ["posts"]
+    layout = "card"

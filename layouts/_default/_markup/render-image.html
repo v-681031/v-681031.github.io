@@ -1,0 +1,29 @@
+{{- $img := .Page.Resources.GetMatch .Destination -}}
+{{- if $img -}}
+  {{- /* 恢復高品質且有文字的版面 */ -}}
+  <div style="width: 100%; display: flex !important; justify-content: center !important; margin: 3rem 0;">
+    <img src="{{ $img.RelPermalink }}" 
+         alt="{{ .Text }}" 
+         {{ with .Title }} title="{{ . }}" {{ end }}
+         style="
+                /* 尺寸：回歸 85% 黃金比例 */
+                width: 85% !important; 
+                max-width: 2560px !important; 
+                height: auto !important; 
+                display: block !important; 
+                margin: 0 auto !important;
+
+                /* 畫質：Safari 銳利化渲染 */
+                image-rendering: -webkit-optimize-contrast !important; 
+                image-rendering: high-quality !important; 
+                
+                /* 效能：預防毛邊 */
+                -webkit-backface-visibility: hidden;
+                transform: translateZ(0);
+               ">
+  </div>
+{{- else -}}
+  <div style="text-align: center; margin: 3rem 0;">
+    <img src="{{ .Destination | safeURL }}" alt="{{ .Text }}" style="width: 85% !important; height: auto !important;">
+  </div>
+{{- end -}}

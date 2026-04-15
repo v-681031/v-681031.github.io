@@ -4,14 +4,14 @@
 
   <url>
     <loc>http://localhost:1313/posts/</loc>
-    <lastmod>2026-04-14T18:42:49+08:00</lastmod>
+    <lastmod>2026-04-14T00:00:00+00:00</lastmod>
   </url>
   <url>
     <loc>http://localhost:1313/</loc>
-    <lastmod>2026-04-14T18:42:49+08:00</lastmod>
+    <lastmod>2026-04-14T00:00:00+00:00</lastmod>
   </url>
   <url>
     <loc>http://localhost:1313/posts/first-journey/</loc>
-    <lastmod>2026-04-14T18:42:49+08:00</lastmod>
+    <lastmod>2026-04-14T00:00:00+00:00</lastmod>
   </url>
 </urlset>
