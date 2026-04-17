@@ -1,41 +1,61 @@
 #!/bin/bash
 
-# --- v-681031 專屬影像工廠：超級進化版 2.0 ---
-# 功能：自動掃描所有資料夾、縮放至 2560px、畫質 90、轉為 WebP 並移除隱私資訊
-# 新增支援：JPG, PNG, JPEG, BMP (不分大小寫)
+# --- M5 通用影像自動化引擎 (Universal Image Factory) ---
+# 功能：自動轉檔 WebP、高品質縮放、抹除隱私、自動生成 index.md
+# 排序邏輯：自動提取資料夾名稱中的數字作為「負數權重」(數字越大，位置越高)
 
 TARGET_DIR="./content/posts"
 QUALITY=90
 WIDTH=2560
+CURRENT_TIME=$(date +%Y-%m-%dT%H:%M:%S+08:00)
 
-echo "🚀 影像工廠啟動：正在掃描 $TARGET_DIR 底下的所有資料夾..."
+echo "🚀 [通用影像工廠] 啟動！正在進行全自動出版流程..."
 
-# 檢查是否安裝了 ImageMagick (convert)
+# 檢查 ImageMagick 是否安裝
 if ! command -v convert &> /dev/null; then
-    echo "❌ 錯誤: 找不到 convert 指令。請先執行 'brew install imagemagick'"
+    echo "❌ 錯誤: 找不到 convert 指令。請執行 'brew install imagemagick' 以啟用影像轉檔功能。"
     exit 1
 fi
 
-# 使用 find 指令遞迴搜尋所有影像 (新增 -iname "*.bmp")
-find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.bmp" \) | while read -r img; do
+# 1. 遍歷目標目錄下的所有子資料夾
+for dir in "$TARGET_DIR"/*/; do
+    # 確保是有效的資料夾
+    [ -d "$dir" ] || continue
     
-    # 取得不含副檔名的路徑
-    base_path="${img%.*}"
-    webp_path="${base_path}.webp"
-
-    # 檢查是否已經存在 webp 檔案，不存在才處理
-    if [ ! -f "$webp_path" ]; then
-        echo "📸 正在轉換並縮放: $img"
-        # 1. 調整寬度至 2560px
-        # 2. 抹除 GPS 與隱私資訊 (-strip)
-        # 3. 設定畫質 90
-        # ImageMagick 會自動處理來源格式 (包含 BMP)
-        convert "$img" -resize "${WIDTH}x" -strip -quality "$QUALITY" "$webp_path"
-        echo "✅ 成功產出: $webp_path"
+    FOLDER_NAME=$(basename "$dir")
+    
+    # --- 智慧權重計算 ---
+    # 從資料夾名稱中提取第一個出現的數字序列
+    NUM_ID=$(echo "$FOLDER_NAME" | grep -oE '[0-9]+' | head -1)
+    
+    if [ -z "$NUM_ID" ]; then
+        # 名稱中無數字時，權重設為 0
+        FINAL_WEIGHT=0
+        echo "📂 處理資料夾：$FOLDER_NAME (無序號，預設權重: 0)"
     else
-        # 如果已經轉過，就快速跳過，節省時間
-        echo "⏩ 跳過 (已存在): $webp_path"
+        # 將數字轉為負數權重 (例如：序號 100 -> 權重 -100，保證排在序號 99 之前)
+        FINAL_WEIGHT=$((NUM_ID * -1))
+        echo "📂 處理資料夾：$FOLDER_NAME (偵測到序號: $NUM_ID -> 權重: $FINAL_WEIGHT)"
     fi
+
+    # --- 影像轉檔與優化 ---
+    # 掃描 JPG, PNG, BMP 原始檔
+    find "$dir" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.bmp" \) | while read -r img; do
+        base_path="${img%.*}"
+        webp_path="${base_path}.webp"
+        
+        # 僅當 WebP 不存在時才執行轉檔，避免重複運算
+        if [ ! -f "$webp_path" ]; then
+            convert "$img" -resize "${WIDTH}x" -strip -quality "$QUALITY" "$webp_path"
+            echo "  ✅ 影像優化完成: $(basename "$webp_path")"
+        fi
+    done
+
+    # --- 自動出版 index.md (強制覆蓋，確保排序邏輯同步) ---
+    printf "+++\ntitle = \"%s\"\ndate = %s\nweight = %d\nlayout = \"wide\"\ndraft = false\n+++\n\n{{< auto-gallery >}}\n" "$FOLDER_NAME" "$CURRENT_TIME" "$FINAL_WEIGHT" > "$dir/index.md"
+    
+    echo "  ✨ $FOLDER_NAME 出版配置已更新完成。"
 done
 
-echo "🎉 處理完成！現在你的所有影像（含金門 BMP）都是 2560px @ Q90 的極致畫質了。"
+echo "🎉 [任務達成] 全數目錄處理完畢！"
+exit 0
