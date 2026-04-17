@@ -1,23 +1,22 @@
-baseURL = 'https://v-681031.github.io/'
-languageCode = 'zh-tw'
-title = '影像實驗室'
-theme = 'blowfish'
+baseURL = "https://v-681031.github.io/"
+languageCode = "zh-TW"
+defaultContentLanguage = "zh-tw"
+title = "M5 攝影牆"
+theme = "blowfish"
 
+# [核心設定] 允許 HTML 渲染 (讓相簿代碼生效)
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
-  [markup.highlight]
-    noClasses = false
 
+# [主題參數]
 [params]
+  colorScheme = "blowfish"
+  mainSections = ["posts"]   # 指定從 posts 目錄抓取文章
+
   [params.article]
-    layoutWidth = "wide"  # 改為 wide 以配合 gallery
-    showAuthor = true
-    showDate = true
-    showReadingTime = true
+    zoomImages = false       # 關閉 Blowfish 內建放大功能，避免燈箱重疊
 
   [params.homepage]
-    showRecent = true
-    mainSections = ["posts"]
-    layout = "card"
+    showRecent = true        # 強制在首頁顯示最新文章清單
