@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# --- v-681031 專屬影像工廠：超級進化版 ---
+# --- v-681031 專屬影像工廠：超級進化版 2.0 ---
 # 功能：自動掃描所有資料夾、縮放至 2560px、畫質 90、轉為 WebP 並移除隱私資訊
+# 新增支援：JPG, PNG, JPEG, BMP (不分大小寫)
 
 TARGET_DIR="./content/posts"
 QUALITY=90
@@ -15,8 +16,8 @@ if ! command -v convert &> /dev/null; then
     exit 1
 fi
 
-# 使用 find 指令遞迴搜尋所有 JPG 和 PNG (不論大小寫)
-find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | while read -r img; do
+# 使用 find 指令遞迴搜尋所有影像 (新增 -iname "*.bmp")
+find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.bmp" \) | while read -r img; do
     
     # 取得不含副檔名的路徑
     base_path="${img%.*}"
@@ -28,6 +29,7 @@ find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png
         # 1. 調整寬度至 2560px
         # 2. 抹除 GPS 與隱私資訊 (-strip)
         # 3. 設定畫質 90
+        # ImageMagick 會自動處理來源格式 (包含 BMP)
         convert "$img" -resize "${WIDTH}x" -strip -quality "$QUALITY" "$webp_path"
         echo "✅ 成功產出: $webp_path"
     else
@@ -36,4 +38,4 @@ find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png
     fi
 done
 
-echo "🎉 處理完成！現在你的所有影像都是 2560px @ Q90 的極致畫質了。"
+echo "🎉 處理完成！現在你的所有影像（含金門 BMP）都是 2560px @ Q90 的極致畫質了。"

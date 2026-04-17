@@ -1,0 +1,43 @@
+<style>
+  .auto-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    width: 100% !important;
+    padding: 20px 0 !important;
+  }
+  
+  .auto-grid-item {
+    /* 這裡設定為 20%，也就是 5 欄排列 */
+    flex: 1 1 calc(20% - 10px) !important;
+    min-width: 150px !important;
+    margin: 0 !important;
+  }
+
+  .auto-grid-item img {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 6px !important;
+    display: block !important;
+    transition: transform 0.3s ease !important;
+    cursor: zoom-in;
+  }
+
+  .auto-grid-item img:hover {
+    transform: scale(1.05);
+    z-index: 5;
+  }
+</style>
+
+<div class="auto-grid">
+  {{ range .Page.Resources.ByType "image" }}
+    <div class="auto-grid-item">
+      {{ if (and (ne .MediaType.SubType "bmp") (ne .MediaType.SubType "x-ms-bmp")) }}
+        {{ $thumbnail := .Resize "600x q85 webp" }}
+        <img src="{{ $thumbnail.RelPermalink }}" class="medium-zoom-image" alt="影像測試" />
+      {{ else }}
+        <img src="{{ .RelPermalink }}" class="medium-zoom-image" alt="BMP 影像測試" />
+      {{ end }}
+    </div>
+  {{ end }}
+</div>
