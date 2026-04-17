@@ -3,15 +3,20 @@ languageCode = 'zh-tw'
 title = '影像實驗室'
 theme = 'blowfish'
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    noClasses = false
+
 [params]
-  # 開啟文章 UI
   [params.article]
-    layoutWidth = "full" 
+    layoutWidth = "wide"  # 改為 wide 以配合 gallery
     showAuthor = true
     showDate = true
     showReadingTime = true
 
-  # 確保首頁顯示 Recent 與卡片
   [params.homepage]
     showRecent = true
     mainSections = ["posts"]
