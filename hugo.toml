@@ -1,7 +1,7 @@
 baseURL = "https://v-681031.github.io/"
 languageCode = "zh-TW"
 defaultContentLanguage = "zh-tw"
-title = "M5 攝影牆"
+title = "Photo Gallery"
 theme = "blowfish"
 
 # [核心設定] 允許 HTML 渲染 (讓相簿代碼生效)
@@ -17,6 +17,10 @@ theme = "blowfish"
 
   [params.article]
     zoomImages = false       # 關閉 Blowfish 內建放大功能，避免燈箱重疊
+    showDate = false         # 隱藏文章日期
+    showWordCount = false    # 隱藏文章字數
+    showReadingTime = false  # 隱藏閱讀時間
 
   [params.homepage]
     showRecent = true        # 強制在首頁顯示最新文章清單
+    cardView = true          # 啟用卡片網格 (手機1欄、平板2欄、桌面3欄)
