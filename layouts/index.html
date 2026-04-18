@@ -36,6 +36,11 @@ main, #main-content, .article-content, article {
     justify-content: center;
     align-items: center;
     z-index: 999999;
+    /* 封鎖所有互動 */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    cursor: none;
 }
 
 .splash-wrapper img {
@@ -46,16 +51,46 @@ main, #main-content, .article-content, article {
     object-fit: contain;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    pointer-events: none;
+    -webkit-user-drag: none;
 }
 </style>
 
-<div class="splash-wrapper">
-    <img src="/splash.jpg" alt="Splash">
+<div class="splash-wrapper" id="splash-wrapper">
+    <img src="/splash.jpg" alt="Splash" draggable="false">
 </div>
 
 <script>
-setTimeout(function() {
-    window.location.href = "/posts/";
-}, 5000);
+(function() {
+    var locked = true;
+
+    // 封鎖所有滑鼠/鍵盤/觸控事件
+    function blockEvent(e) {
+        if (locked) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+
+    var events = [
+        'click', 'dblclick', 'mousedown', 'mouseup',
+        'contextmenu', 'wheel', 'scroll',
+        'keydown', 'keyup', 'keypress',
+        'touchstart', 'touchend', 'touchmove',
+        'dragstart', 'selectstart'
+    ];
+
+    events.forEach(function(evt) {
+        window.addEventListener(evt, blockEvent, { capture: true, passive: false });
+        document.addEventListener(evt, blockEvent, { capture: true, passive: false });
+    });
+
+    // 5 秒後解除封鎖並跳轉
+    setTimeout(function() {
+        locked = false;
+        window.location.href = "/posts/";
+    }, 20000);
+})();
 </script>
 {{ end }}
