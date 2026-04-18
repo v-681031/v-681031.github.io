@@ -26,3 +26,7 @@ theme = "blowfish"
   [params.homepage]
     showRecent = true        # 強制在首頁顯示最新文章清單
     cardView = true          # 啟用卡片網格 (手機1欄、平板2欄、桌面3欄)
+  [params.list]
+    cardView = true
+    cardViewScreenWidth = false
+    groupByYear = false
