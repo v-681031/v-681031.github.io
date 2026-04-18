@@ -1,0 +1,11 @@
+/* 極致黑背景 */
+html.dark body,
+html.dark {
+    background-color: #000000 !important;
+}
+
+html.dark #site-footer,
+html.dark #main-content,
+html.dark main {
+    background-color: #000000 !important;
+}

@@ -13,6 +13,8 @@ theme = "blowfish"
 # [主題參數]
 [params]
   colorScheme = "blowfish"
+  defaultAppearance = "dark"
+  autoSwitchAppearance = false
   mainSections = ["posts"]   # 指定從 posts 目錄抓取文章
 
   [params.article]
