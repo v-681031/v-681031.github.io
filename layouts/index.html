@@ -32,7 +32,6 @@ main, #main-content, .article-content, article {
     z-index: 999999;
     user-select: none;
     -webkit-user-select: none;
-    cursor: pointer;
 }
 
 .splash-wrapper img {
@@ -45,40 +44,16 @@ main, #main-content, .article-content, article {
     -webkit-user-drag: none;
 }
 
-/* YouTube 播放器隱藏，只取聲音 */
+/* 不完全隱藏，留一點透明度讓 Safari 允許播放 */
 #yt-player-container {
     position: fixed;
-    left: -9999px;
-    top: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    height: 2px;
+    opacity: 0.01;
     pointer-events: none;
-}
-
-/* 極淡的提示字（給搞不清楚的訪客） */
-.click-hint {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.25);
-    font-size: 12px;
-    font-family: sans-serif;
-    font-weight: 300;
-    letter-spacing: 3px;
-    z-index: 9999999;
-    pointer-events: none;
-    opacity: 0;
-    animation: hintFadeIn 2s ease-in 2s forwards, hintPulse 2s ease-in-out 4s infinite;
-}
-
-@keyframes hintFadeIn {
-    to { opacity: 0.35; }
-}
-@keyframes hintPulse {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.45; }
+    z-index: -1;
 }
 </style>
 
@@ -90,12 +65,10 @@ main, #main-content, .article-content, article {
     <div id="yt-player"></div>
 </div>
 
-<div class="click-hint" id="click-hint">click anywhere</div>
-
 <script>
 (function() {
     var musicStarted = false;
-    var redirectTimer = null;
+    var playerReady = false;
     var player;
 
     // 載入 YouTube IFrame API
@@ -105,70 +78,83 @@ main, #main-content, .article-content, article {
 
     window.onYouTubeIframeAPIReady = function() {
         player = new YT.Player('yt-player', {
-            height: '1',
-            width: '1',
+            height: '2',
+            width: '2',
             videoId: 'JG6ZTOag12o',
+            host: 'https://www.youtube-nocookie.com',
             playerVars: {
                 'autoplay': 0,
                 'controls': 0,
                 'playsinline': 1,
-                'rel': 0
+                'rel': 0,
+                'origin': window.location.origin,
+                'enablejsapi': 1
+            },
+            events: {
+                'onReady': function() {
+                    playerReady = true;
+                    console.log("[Splash] ✅ YouTube player ready");
+                },
+                'onError': function(e) {
+                    console.error("[Splash] ❌ YouTube error code:", e.data);
+                }
             }
         });
     };
 
-    // 永遠封鎖的事件（右鍵、滾輪、拖拉、選取等）
+    // 永遠封鎖的事件
     function blockAlways(e) {
         e.preventDefault();
         e.stopPropagation();
         return false;
     }
-
-    var alwaysBlocked = [
-        'contextmenu', 'wheel', 'scroll',
-        'touchmove', 'dragstart', 'selectstart'
-    ];
-
-    alwaysBlocked.forEach(function(evt) {
+    ['contextmenu', 'wheel', 'scroll', 'touchmove', 'dragstart', 'selectstart'].forEach(function(evt) {
         window.addEventListener(evt, blockAlways, { capture: true, passive: false });
     });
 
-    // 第一次互動 → 播音樂 → 鎖後續
     function onFirstInteraction(e) {
         if (musicStarted) {
-            // 之後的點擊全部封鎖
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
+        if (!playerReady || !player) {
+            console.log("[Splash] ⏳ Player not ready yet, waiting...");
+            return;
+        }
+
         musicStarted = true;
+        console.log("[Splash] 🎵 Triggering music");
 
-        // 開始播音樂
         try {
-            if (player && player.playVideo) {
-                player.playVideo();
-            }
-        } catch (err) { /* 靜默失敗 */ }
+            player.setVolume(100);
+            player.playVideo();
+        } catch (err) {
+            console.error("[Splash] playVideo failed:", err);
+        }
 
-        // 隱藏提示
-        var hint = document.getElementById('click-hint');
-        if (hint) hint.style.display = 'none';
-
-        // 重設倒數 → 點擊起算 20 秒跳轉
-        if (redirectTimer) clearTimeout(redirectTimer);
-        redirectTimer = setTimeout(function() {
-            window.location.href = "/posts/";
-        }, 20000);
+        // 40 秒全音量 → 7 秒淡出 → 3 秒靜止 → 跳轉
+        setTimeout(function() {
+            var currentVolume = 100;
+            var fadeInterval = setInterval(function() {
+                currentVolume -= 2;
+                if (currentVolume <= 0) {
+                    clearInterval(fadeInterval);
+                    try { player.stopVideo(); } catch (err) {}
+                    setTimeout(function() {
+                        window.location.href = "/posts/";
+                    }, 3000);
+                } else {
+                    try { player.setVolume(currentVolume); } catch (err) {}
+                }
+            }, 140); // 每 140ms 降 2，共 7 秒淡出
+        }, 40000); // 40 秒後開始淡出
     }
 
+    window.addEventListener('mousemove', onFirstInteraction, { capture: true });
+    window.addEventListener('keydown', onFirstInteraction, { capture: true });
     window.addEventListener('click', onFirstInteraction, { capture: true });
     window.addEventListener('touchstart', onFirstInteraction, { capture: true, passive: false });
-    window.addEventListener('keydown', onFirstInteraction, { capture: true });
-
-    // 備援：30 秒內沒互動也強制跳轉（避免永遠卡住）
-    redirectTimer = setTimeout(function() {
-        window.location.href = "/posts/";
-    }, 30000);
 })();
 </script>
 {{ end }}
