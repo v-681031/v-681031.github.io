@@ -12,28 +12,43 @@ hugo_stats.json
 .LSOverride
 Icon
 
-
 # --- 影像實驗室：大圖過濾區 ---
 # 為了不佔用 GitHub 空間，我們忽略 content/posts 下所有資料夾的圖檔
 # 包含大小寫組合，確保萬無一失
-
 # WebP 格式
 content/posts/**/*.webp
 content/posts/**/*.WEBP
-
 # JPG / JPEG 格式
 content/posts/**/*.jpg
 content/posts/**/*.JPG
 content/posts/**/*.jpeg
 content/posts/**/*.JPEG
-
 # PNG 格式
 content/posts/**/*.png
 content/posts/**/*.PNG
-
 # BMP 格式
 content/posts/**/*.bmp
 content/posts/**/*.BMP
+
+# --- 全域圖片排除（所有資料夾皆適用）---
+# 因未來正式平台將移到 Linux 自架，GitHub 僅作代碼測試平台
+# 所有圖片由 syncthing 管理，不上傳 GitHub
+*.webp
+*.WEBP
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.png
+*.PNG
+*.bmp
+*.BMP
+*.gif
+*.GIF
+*.heic
+*.HEIC
+*.tiff
+*.TIFF
 
 # --- 其他 ---
 # 忽略任何暫存或備份檔

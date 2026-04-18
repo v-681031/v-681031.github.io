@@ -1,0 +1,42 @@
+{{/* Splash fade-in: /posts/ 從全黑淡入，共 7 秒 */}}
+<script>
+(function() {
+    try {
+        if (sessionStorage.getItem('fromSplash') === '1') {
+            // 立即把整個頁面塗黑，避免閃一下內容
+            document.documentElement.style.backgroundColor = '#000';
+
+            var hideStyle = document.createElement('style');
+            hideStyle.id = 'splash-hide-style';
+            hideStyle.textContent = 'body { visibility: hidden !important; }';
+            (document.head || document.documentElement).appendChild(hideStyle);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                sessionStorage.removeItem('fromSplash');
+
+                // 建立全黑 overlay
+                var overlay = document.createElement('div');
+                overlay.id = 'splash-fadeout-overlay';
+                overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:999999;opacity:1;transition:opacity 7s ease-out;pointer-events:none;';
+                document.body.appendChild(overlay);
+
+                // 顯示 body
+                var s = document.getElementById('splash-hide-style');
+                if (s) s.remove();
+
+                // 雙 rAF 確保 transition 生效
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        overlay.style.opacity = '0';
+                    });
+                });
+
+                // 7 秒後移除
+                setTimeout(function() {
+                    overlay.remove();
+                }, 7500);
+            });
+        }
+    } catch (e) {}
+})();
+</script>
