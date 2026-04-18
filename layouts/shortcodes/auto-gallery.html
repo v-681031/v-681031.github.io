@@ -1,15 +1,30 @@
 {{/* ========================================== */}}
-{{/* M5 智慧相簿分流器 (not-prose 修正版) */}}
+{{/* M5 智慧相簿分流器 (寬版 + 置中修正版) */}}
 {{/* ========================================== */}}
 
 <style>
+/* 僅對含相簿的頁面解除 prose 寬度限制 */
+.article-content:has(.m5-gallery-grid) {
+    max-width: none !important;
+}
+
 /* 五欄網格 */
 .m5-gallery-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 2rem 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin: 2rem auto;
+    max-width: 1400px;
+    width: 100%;
 }
 .m5-gallery-item {
-    width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden;
-    cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
     margin: 0 !important;
 }
 .m5-gallery-item:hover { transform: scale(1.03); }
@@ -17,9 +32,13 @@
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
+    object-position: center !important;
     display: block !important;
     margin: 0 !important;
+    padding: 0 !important;
     max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
 }
 
 /* 燈箱與按鈕 */
