@@ -1,6 +1,5 @@
 {{ define "main" }}
 <style>
-/* 全螢幕啟動頁 */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -8,13 +7,8 @@ html, body {
     overflow: hidden !important;
 }
 
-/* 隱藏 Blowfish 的 header / footer / 所有外層 */
-#site-header,
-#site-footer,
-.main-menu,
-header,
-footer,
-nav {
+#site-header, #site-footer, .main-menu,
+header, footer, nav {
     display: none !important;
 }
 
@@ -36,11 +30,9 @@ main, #main-content, .article-content, article {
     justify-content: center;
     align-items: center;
     z-index: 999999;
-    /* 封鎖所有互動 */
     user-select: none;
     -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    cursor: none;
+    cursor: pointer;
 }
 
 .splash-wrapper img {
@@ -49,10 +41,44 @@ main, #main-content, .article-content, article {
     width: auto;
     height: auto;
     object-fit: contain;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
     pointer-events: none;
     -webkit-user-drag: none;
+}
+
+/* YouTube 播放器隱藏，只取聲音 */
+#yt-player-container {
+    position: fixed;
+    left: -9999px;
+    top: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 極淡的提示字（給搞不清楚的訪客） */
+.click-hint {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.25);
+    font-size: 12px;
+    font-family: sans-serif;
+    font-weight: 300;
+    letter-spacing: 3px;
+    z-index: 9999999;
+    pointer-events: none;
+    opacity: 0;
+    animation: hintFadeIn 2s ease-in 2s forwards, hintPulse 2s ease-in-out 4s infinite;
+}
+
+@keyframes hintFadeIn {
+    to { opacity: 0.35; }
+}
+@keyframes hintPulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.45; }
 }
 </style>
 
@@ -60,37 +86,89 @@ main, #main-content, .article-content, article {
     <img src="/splash.jpg" alt="Splash" draggable="false">
 </div>
 
+<div id="yt-player-container">
+    <div id="yt-player"></div>
+</div>
+
+<div class="click-hint" id="click-hint">click anywhere</div>
+
 <script>
 (function() {
-    var locked = true;
+    var musicStarted = false;
+    var redirectTimer = null;
+    var player;
 
-    // 封鎖所有滑鼠/鍵盤/觸控事件
-    function blockEvent(e) {
-        if (locked) {
+    // 載入 YouTube IFrame API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    window.onYouTubeIframeAPIReady = function() {
+        player = new YT.Player('yt-player', {
+            height: '1',
+            width: '1',
+            videoId: 'JG6ZTOag12o',
+            playerVars: {
+                'autoplay': 0,
+                'controls': 0,
+                'playsinline': 1,
+                'rel': 0
+            }
+        });
+    };
+
+    // 永遠封鎖的事件（右鍵、滾輪、拖拉、選取等）
+    function blockAlways(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+
+    var alwaysBlocked = [
+        'contextmenu', 'wheel', 'scroll',
+        'touchmove', 'dragstart', 'selectstart'
+    ];
+
+    alwaysBlocked.forEach(function(evt) {
+        window.addEventListener(evt, blockAlways, { capture: true, passive: false });
+    });
+
+    // 第一次互動 → 播音樂 → 鎖後續
+    function onFirstInteraction(e) {
+        if (musicStarted) {
+            // 之後的點擊全部封鎖
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
+        musicStarted = true;
+
+        // 開始播音樂
+        try {
+            if (player && player.playVideo) {
+                player.playVideo();
+            }
+        } catch (err) { /* 靜默失敗 */ }
+
+        // 隱藏提示
+        var hint = document.getElementById('click-hint');
+        if (hint) hint.style.display = 'none';
+
+        // 重設倒數 → 點擊起算 20 秒跳轉
+        if (redirectTimer) clearTimeout(redirectTimer);
+        redirectTimer = setTimeout(function() {
+            window.location.href = "/posts/";
+        }, 20000);
     }
 
-    var events = [
-        'click', 'dblclick', 'mousedown', 'mouseup',
-        'contextmenu', 'wheel', 'scroll',
-        'keydown', 'keyup', 'keypress',
-        'touchstart', 'touchend', 'touchmove',
-        'dragstart', 'selectstart'
-    ];
+    window.addEventListener('click', onFirstInteraction, { capture: true });
+    window.addEventListener('touchstart', onFirstInteraction, { capture: true, passive: false });
+    window.addEventListener('keydown', onFirstInteraction, { capture: true });
 
-    events.forEach(function(evt) {
-        window.addEventListener(evt, blockEvent, { capture: true, passive: false });
-        document.addEventListener(evt, blockEvent, { capture: true, passive: false });
-    });
-
-    // 5 秒後解除封鎖並跳轉
-    setTimeout(function() {
-        locked = false;
+    // 備援：30 秒內沒互動也強制跳轉（避免永遠卡住）
+    redirectTimer = setTimeout(function() {
         window.location.href = "/posts/";
-    }, 20000);
+    }, 30000);
 })();
 </script>
 {{ end }}
