@@ -1,0 +1,111 @@
+{{/* ========================================== */}}
+{{/* M5 智慧相簿分流器 (寬版 + 置中修正版) */}}
+{{/* ========================================== */}}
+
+<style>
+/* 僅對含相簿的頁面解除 prose 寬度限制 */
+.article-content:has(.m5-gallery-grid) {
+    max-width: none !important;
+}
+
+/* 五欄網格 */
+.m5-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin: 2rem auto;
+    max-width: 1400px;
+    width: 100%;
+}
+.m5-gallery-item {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    margin: 0 !important;
+}
+.m5-gallery-item:hover { transform: scale(1.03); }
+.m5-gallery-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+/* 燈箱與按鈕 */
+#m5-lightbox {
+    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.95); z-index: 99999;
+    justify-content: center; align-items: center; flex-direction: column;
+}
+#m5-lightbox-img {
+    max-width: 90vw; max-height: 80vh; object-fit: contain; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+#m5-download-btn {
+    margin-top: 20px; padding: 12px 30px; background-color: #ffffff; color: #000000;
+    text-decoration: none; font-weight: bold; border-radius: 30px; font-family: sans-serif;
+}
+#m5-download-btn:hover { background-color: #dddddd; }
+#m5-lightbox-close {
+    position: absolute; top: 20px; right: 30px; color: white; font-size: 45px; cursor: pointer;
+}
+</style>
+
+<div class="m5-gallery-grid not-prose">
+    {{ range .Page.Resources.Match "*.webp" }}
+        {{ if not (in .Name "feature") }}
+            {{ $webp := . }}
+            {{ $baseName := strings.TrimSuffix (path.Ext .Name) .Name }}
+
+            {{ $orig := $.Page.Resources.GetMatch (printf "%s.jpg" $baseName) }}
+            {{ if not $orig }}{{ $orig = $.Page.Resources.GetMatch (printf "%s.JPG" $baseName) }}{{ end }}
+            {{ if not $orig }}{{ $orig = $.Page.Resources.GetMatch (printf "%s.bmp" $baseName) }}{{ end }}
+            {{ if not $orig }}{{ $orig = $.Page.Resources.GetMatch (printf "%s.BMP" $baseName) }}{{ end }}
+            {{ if not $orig }}{{ $orig = $.Page.Resources.GetMatch (printf "%s.png" $baseName) }}{{ end }}
+            {{ if not $orig }}{{ $orig = $.Page.Resources.GetMatch (printf "%s.PNG" $baseName) }}{{ end }}
+
+            {{ $dlUrl := $webp.RelPermalink }}
+            {{ $dlName := $webp.Name }}
+            {{ if $orig }}
+                {{ $dlUrl = $orig.RelPermalink }}
+                {{ $dlName = $orig.Name }}
+            {{ end }}
+
+            <div class="m5-gallery-item" onclick="openM5Lightbox('{{ $webp.RelPermalink }}', '{{ $dlUrl }}', '{{ $dlName }}')">
+                <img src="{{ ($webp.Resize "500x500 webp").RelPermalink }}" loading="lazy" alt="{{ $baseName }}" class="nozoom">
+            </div>
+        {{ end }}
+    {{ end }}
+</div>
+
+<div id="m5-lightbox" onclick="closeM5Lightbox(event)" class="not-prose">
+    <span id="m5-lightbox-close">&times;</span>
+    <img id="m5-lightbox-img" src="" class="nozoom">
+    <a id="m5-download-btn" href="" download>📥 下載高品質原始檔</a>
+</div>
+
+<script>
+function openM5Lightbox(webpUrl, dlUrl, filename) {
+    const lightbox = document.getElementById('m5-lightbox');
+    document.getElementById('m5-lightbox-img').src = webpUrl;
+    const btn = document.getElementById('m5-download-btn');
+    btn.href = dlUrl;
+    btn.download = filename;
+    lightbox.style.display = 'flex';
+}
+function closeM5Lightbox(event) {
+    if (event.target.id === 'm5-lightbox' || event.target.id === 'm5-lightbox-close') {
+        document.getElementById('m5-lightbox').style.display = 'none';
+        document.getElementById('m5-lightbox-img').src = '';
+    }
+}
+</script>

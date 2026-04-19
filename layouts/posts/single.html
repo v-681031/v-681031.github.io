@@ -1,0 +1,194 @@
+{{ define "main" }}
+<article class="masonry-page">
+    <header class="masonry-header">
+        <h1>{{ .Title }}</h1>
+        {{ with .Params.subtitle }}
+            <p class="subtitle">{{ . }}</p>
+        {{ end }}
+        {{ with .Params.date }}
+            <p class="date">{{ . | time.Format "2006-01-02" }}</p>
+        {{ end }}
+    </header>
+    
+    {{ if .Content }}
+    <div class="masonry-intro">
+        {{ .Content }}
+    </div>
+    {{ end }}
+    
+    {{/* ========== 瀑布流圖片區塊 ========== */}}
+    <div class="masonry-gallery">
+        {{ range .Resources.Match "*.webp" }}
+            {{ if not (in .Name "feature") }}
+                {{ $webp := . }}
+                {{ $baseName := strings.TrimSuffix (path.Ext .Name) .Name }}
+                {{ $orig := $.Resources.GetMatch (printf "%s.jpg" $baseName) }}
+                {{ if not $orig }}{{ $orig = $.Resources.GetMatch (printf "%s.JPG" $baseName) }}{{ end }}
+                {{ if not $orig }}{{ $orig = $.Resources.GetMatch (printf "%s.bmp" $baseName) }}{{ end }}
+                {{ if not $orig }}{{ $orig = $.Resources.GetMatch (printf "%s.BMP" $baseName) }}{{ end }}
+                {{ if not $orig }}{{ $orig = $.Resources.GetMatch (printf "%s.png" $baseName) }}{{ end }}
+                {{ if not $orig }}{{ $orig = $.Resources.GetMatch (printf "%s.PNG" $baseName) }}{{ end }}
+                {{ $dlUrl := $webp.RelPermalink }}
+                {{ $dlName := $webp.Name }}
+                {{ if $orig }}
+                    {{ $dlUrl = $orig.RelPermalink }}
+                    {{ $dlName = $orig.Name }}
+                {{ end }}
+                <div class="masonry-item" onclick="openM5Lightbox('{{ $webp.RelPermalink }}', '{{ $dlUrl }}', '{{ $dlName }}')">
+                    <img src="{{ $webp.RelPermalink }}" alt="{{ $baseName }}" loading="lazy" class="nozoom">
+                </div>
+            {{ end }}
+        {{ end }}
+    </div>
+</article>
+
+{{/* ========== 上一篇 / 下一篇 導航（方案A：呼叫 Blowfish 原生 partial） ========== */}}
+<footer class="masonry-footer pt-8 max-w-prose print:hidden">
+    {{ partial "article-pagination.html" . }}
+</footer>
+
+{{/* ========== Lightbox 彈窗（從 auto-gallery.html 移植） ========== */}}
+<div id="m5-lightbox" onclick="closeM5Lightbox(event)" class="not-prose">
+    <span id="m5-lightbox-close">&times;</span>
+    <img id="m5-lightbox-img" src="" class="nozoom">
+    <a id="m5-download-btn" href="" download>📥 下載高品質原始檔</a>
+</div>
+
+<style>
+/* ===== 瀑布流排版 ===== */
+.masonry-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+.masonry-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.masonry-header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+.masonry-header .subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+.masonry-header .date {
+    color: #999;
+    font-size: 0.9rem;
+}
+.masonry-intro {
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    line-height: 1.8;
+}
+
+.masonry-gallery {
+    column-count: 3;
+    column-gap: 12px;
+}
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 6px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.masonry-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.masonry-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+/* ===== 分頁導航 footer ===== */
+.masonry-footer {
+    max-width: 1400px;
+    margin: 3rem auto 2rem;
+    padding: 0 1rem;
+}
+
+@media (max-width: 1024px) {
+    .masonry-gallery { column-count: 2; }
+}
+@media (max-width: 600px) {
+    .masonry-gallery { column-count: 1; }
+}
+
+/* ===== Lightbox ===== */
+#m5-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 2rem;
+}
+#m5-lightbox.active { display: flex; }
+#m5-lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
+#m5-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #fff;
+    font-size: 3rem;
+    cursor: pointer;
+    line-height: 1;
+    user-select: none;
+}
+#m5-download-btn {
+    margin-top: 1.5rem;
+    padding: 0.7rem 1.6rem;
+    background: #fff;
+    color: #000;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease;
+}
+#m5-download-btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+function openM5Lightbox(webpUrl, dlUrl, filename) {
+    const box = document.getElementById('m5-lightbox');
+    const img = document.getElementById('m5-lightbox-img');
+    const btn = document.getElementById('m5-download-btn');
+    img.src = webpUrl;
+    btn.href = dlUrl;
+    btn.setAttribute('download', filename);
+    box.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeM5Lightbox(event) {
+    if (event.target.id === 'm5-lightbox' || event.target.id === 'm5-lightbox-close') {
+        document.getElementById('m5-lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('m5-lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+});
+</script>
+{{ end }}
